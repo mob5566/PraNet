@@ -7,6 +7,10 @@ from lib.PraNet_Res2Net import PraNet
 from utils.dataloader import get_loader
 from utils.utils import clip_gradient, adjust_lr, AvgMeter
 import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+
+
+writer = SummaryWriter()
 
 
 def structure_loss(pred, mask):
@@ -62,11 +66,17 @@ def train(train_loader, model, optimizer, epoch):
                   '[lateral-2: {:.4f}, lateral-3: {:0.4f}, lateral-4: {:0.4f}, lateral-5: {:0.4f}]'.
                   format(datetime.now(), epoch, opt.epoch, i, total_step,
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
+            global_step = i + epoch * total_step
+            writer.add_scalar('loss/lateral-2', loss_record2.show(), global_step)
+            writer.add_scalar('loss/lateral-3', loss_record3.show(), global_step)
+            writer.add_scalar('loss/lateral-4', loss_record4.show(), global_step)
+            writer.add_scalar('loss/lateral-5', loss_record5.show(), global_step)
     save_path = 'snapshots/{}/'.format(opt.train_save)
     os.makedirs(save_path, exist_ok=True)
     if (epoch+1) % 10 == 0:
         torch.save(model.state_dict(), save_path + 'PraNet-%d.pth' % epoch)
         print('[Saving Snapshot:]', save_path + 'PraNet-%d.pth'% epoch)
+        # writer.flush()
 
 
 if __name__ == '__main__':
@@ -103,8 +113,8 @@ if __name__ == '__main__':
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr)
 
-    image_root = '{}/images/'.format(opt.train_path)
-    gt_root = '{}/masks/'.format(opt.train_path)
+    image_root = '{}/Imgs/'.format(opt.train_path)
+    gt_root = '{}/GT/'.format(opt.train_path)
 
     train_loader = get_loader(image_root, gt_root, batchsize=opt.batchsize, trainsize=opt.trainsize)
     total_step = len(train_loader)
@@ -115,3 +125,4 @@ if __name__ == '__main__':
         adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
         train(train_loader, model, optimizer, epoch)
 
+    writer.close()

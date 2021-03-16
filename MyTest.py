@@ -15,7 +15,7 @@ parser.add_argument('--img_path', type=str, default=None)
 opt = parser.parse_args()
 
 if opt.img_path:
-    save_path = './results/demo/'
+    save_path = os.path.join(os.path.dirname(opt.img_path), 'results/')
     model = PraNet()
     model.load_state_dict(torch.load(opt.pth_path))
     model.cuda()
@@ -45,8 +45,8 @@ for _data_name in ['CAMO', 'CHAMELEON', 'COD10K']:
     model.eval()
 
     os.makedirs(save_path, exist_ok=True)
-    image_root = '{}/images/'.format(data_path)
-    gt_root = '{}/masks/'.format(data_path)
+    image_root = '{}/Imgs/'.format(data_path)
+    gt_root = '{}/GT/'.format(data_path)
     test_loader = test_dataset(image_root, gt_root, opt.testsize)
 
     for i in range(test_loader.size):
