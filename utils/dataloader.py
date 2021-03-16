@@ -116,3 +116,22 @@ class test_dataset:
         with open(path, 'rb') as f:
             img = Image.open(f)
             return img.convert('L')
+
+class test_image(test_dataset):
+    def __init__(self, image, testsize):
+        self.testsize = testsize
+        self.image = image
+        self.transform = transforms.Compose([
+            transforms.Resize((self.testsize, self.testsize)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406],
+                                 [0.229, 0.224, 0.225])])
+        self.gt_transform = transforms.ToTensor()
+
+    def load_data(self):
+        ori_image = self.rgb_loader(self.image)
+        image = self.transform(ori_image).unsqueeze(0)
+        name = self.image.split('/')[-1]
+        if name.endswith('.jpg'):
+            name = name.split('.jpg')[0] + '.png'
+        return image, ori_image, name
