@@ -17,14 +17,14 @@ opt = parser.parse_args()
 if opt.img_path:
     save_path = os.path.join(os.path.dirname(opt.img_path), 'results/')
     model = PraNet()
-    model.load_state_dict(torch.load(opt.pth_path))
-    model.cuda()
+    model.load_state_dict(torch.load(opt.pth_path, map_location='cpu'))
+    model.cpu()
     model.eval()
 
     os.makedirs(save_path, exist_ok=True)
     test_loader = test_image(opt.img_path, opt.testsize)
     image, ori_image, name = test_loader.load_data()
-    image = image.cuda()
+    image = image.cpu()
 
     res5, res4, res3, res2 = model(image)
     res = res2
@@ -40,7 +40,7 @@ for _data_name in ['CAMO', 'CHAMELEON', 'COD10K']:
     save_path = './results/PraNet_v3/{}/'.format(_data_name)
     opt = parser.parse_args()
     model = PraNet()
-    model.load_state_dict(torch.load(opt.pth_path))
+    model.load_state_dict(torch.load(opt.pth_path, map_location='cpu'))
     model.cuda()
     model.eval()
 
